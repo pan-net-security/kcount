@@ -22,6 +22,7 @@ import (
 func main() {
 	labelSelector := flag.String("l", "", "k8s label selector, e.g env=prod")
 	kind := flag.String("k", "pod", "k8s object kind")
+	age := flag.Bool("a", false, "print also age")
 
 	flag.Parse()
 
@@ -67,7 +68,7 @@ func main() {
 		}
 		return false
 	}})
-	printObjects(objects)
+	printObjects(objects, *age)
 
 }
 
@@ -175,13 +176,22 @@ func getCount(config *Config, kind, labelSelector *string) (*Object, error) {
 // 	return true
 // }
 
-func printObjects(objects []*Object) {
-	const format = "%v\t%v\t%v\t%v\t%v\t%v\t%v\n"
+func printObjects(objects []*Object, age bool) {
 	tw := new(tabwriter.Writer).Init(os.Stdout, 0, 8, 2, ' ', 0)
-	fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label", "Kind", "Count", "Newest", "Oldest")
-	fmt.Fprintf(tw, format, "-------", "---------", "-----", "----", "-----", "------", "------")
-	for _, o := range objects {
-		fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count, translateTimestampSince(o.newest), translateTimestampSince(o.oldest))
+	if age {
+		const format = "%v\t%v\t%v\t%v\t%v\t%v\t%v\n"
+		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label", "Kind", "Count", "Newest", "Oldest")
+		fmt.Fprintf(tw, format, "-------", "---------", "-----", "----", "-----", "------", "------")
+		for _, o := range objects {
+			fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count, translateTimestampSince(o.newest), translateTimestampSince(o.oldest))
+		}
+	} else {
+		const format = "%v\t%v\t%v\t%v\t%v\n"
+		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label", "Kind", "Count")
+		fmt.Fprintf(tw, format, "-------", "---------", "-----", "----", "-----")
+		for _, o := range objects {
+			fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count)
+		}
 	}
 	tw.Flush()
 }
