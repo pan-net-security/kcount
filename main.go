@@ -55,7 +55,18 @@ func main() {
 	}
 	wg.Wait()
 
-	sort.Sort(sort.Reverse(byCount(objects)))
+	sort.Sort(customSort{objects, func(x, y *Object) bool {
+		if x.cluster != y.cluster {
+			return x.cluster < y.cluster
+		}
+		if x.namespace != y.namespace {
+			return x.namespace < y.namespace
+		}
+		if x.count != y.count {
+			return x.count > y.count
+		}
+		return false
+	}})
 	printObjects(objects)
 
 }
@@ -185,11 +196,15 @@ func translateTimestampSince(timestamp metav1.Time) string {
 	return duration.HumanDuration(time.Since(timestamp.Time))
 }
 
-type byCount []*Object
+// customSort sorts Objects according to less function.
+type customSort struct {
+	o    []*Object
+	less func(x, y *Object) bool
+}
 
-func (x byCount) Len() int           { return len(x) }
-func (x byCount) Less(i, j int) bool { return x[i].count < x[j].count }
-func (x byCount) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
+func (x customSort) Len() int           { return len(x.o) }
+func (x customSort) Less(i, j int) bool { return x.less(x.o[i], x.o[j]) }
+func (x customSort) Swap(i, j int)      { x.o[i], x.o[j] = x.o[j], x.o[i] }
 
 func countDeployments(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, metav1.Time, metav1.Time, error) {
 	deployments, err := clientset.AppsV1().Deployments(namespace).List(
