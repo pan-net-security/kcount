@@ -22,6 +22,7 @@ import (
 func main() {
 	labelSelector := flag.String("l", "", "k8s label selector, e.g env=prod")
 	kind := flag.String("k", "pod", "k8s object kind")
+
 	flag.Parse()
 
 	log.SetPrefix(os.Args[0] + ": ")
@@ -56,6 +57,7 @@ func main() {
 
 	sort.Sort(sort.Reverse(byCount(objects)))
 	printObjects(objects)
+
 }
 
 // Config represents kubernetes cluster configuration obtained from within a
@@ -108,8 +110,8 @@ type Object struct {
 	kind          string
 	labelSelector string
 	count         int
-	newest        string
-	oldest        string
+	newest        metav1.Time
+	oldest        metav1.Time
 }
 
 func getCount(config *Config, kind, labelSelector *string) (*Object, error) {
@@ -124,7 +126,7 @@ func getCount(config *Config, kind, labelSelector *string) (*Object, error) {
 		return &obj, fmt.Errorf("generating clientSet: %v", err)
 	}
 	var n int
-	var newest, oldest string
+	var newest, oldest metav1.Time
 	switch *kind {
 	case "deployment", "deploy":
 		n, newest, oldest, err = countDeployments(clientSet, config.namespace, *labelSelector)
@@ -168,7 +170,7 @@ func printObjects(objects []*Object) {
 	fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label", "Kind", "Count", "Newest", "Oldest")
 	fmt.Fprintf(tw, format, "-------", "---------", "-----", "----", "-----", "------", "------")
 	for _, o := range objects {
-		fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count, o.newest, o.oldest)
+		fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count, translateTimestampSince(o.newest), translateTimestampSince(o.oldest))
 	}
 	tw.Flush()
 }
@@ -189,7 +191,7 @@ func (x byCount) Len() int           { return len(x) }
 func (x byCount) Less(i, j int) bool { return x[i].count < x[j].count }
 func (x byCount) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
 
-func countDeployments(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, string, string, error) {
+func countDeployments(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, metav1.Time, metav1.Time, error) {
 	deployments, err := clientset.AppsV1().Deployments(namespace).List(
 		context.TODO(),
 		metav1.ListOptions{LabelSelector: labelSelector})
@@ -207,10 +209,10 @@ func countDeployments(clientset *kubernetes.Clientset, namespace string, labelSe
 			oldest = t
 		}
 	}
-	return len(deployments.Items), translateTimestampSince(newest), translateTimestampSince(oldest), err
+	return len(deployments.Items), newest, oldest, err
 }
 
-func countPods(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, string, string, error) {
+func countPods(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, metav1.Time, metav1.Time, error) {
 	pods, err := clientset.CoreV1().Pods(namespace).List(
 		context.TODO(),
 		metav1.ListOptions{LabelSelector: labelSelector})
@@ -228,10 +230,10 @@ func countPods(clientset *kubernetes.Clientset, namespace string, labelSelector 
 			oldest = t
 		}
 	}
-	return len(pods.Items), translateTimestampSince(newest), translateTimestampSince(oldest), err
+	return len(pods.Items), newest, oldest, err
 }
 
-func countConfigMaps(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, string, string, error) {
+func countConfigMaps(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, metav1.Time, metav1.Time, error) {
 	configMaps, err := clientset.CoreV1().ConfigMaps(namespace).List(
 		context.TODO(),
 		metav1.ListOptions{LabelSelector: labelSelector})
@@ -249,10 +251,10 @@ func countConfigMaps(clientset *kubernetes.Clientset, namespace string, labelSel
 			oldest = t
 		}
 	}
-	return len(configMaps.Items), translateTimestampSince(newest), translateTimestampSince(oldest), err
+	return len(configMaps.Items), newest, oldest, err
 }
 
-func countSecrets(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, string, string, error) {
+func countSecrets(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, metav1.Time, metav1.Time, error) {
 	secrets, err := clientset.CoreV1().Secrets(namespace).List(
 		context.TODO(),
 		metav1.ListOptions{LabelSelector: labelSelector})
@@ -270,10 +272,10 @@ func countSecrets(clientset *kubernetes.Clientset, namespace string, labelSelect
 			oldest = t
 		}
 	}
-	return len(secrets.Items), translateTimestampSince(newest), translateTimestampSince(oldest), err
+	return len(secrets.Items), newest, oldest, err
 }
 
-func countIngresses(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, string, string, error) {
+func countIngresses(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, metav1.Time, metav1.Time, error) {
 	ingresses, err := clientset.NetworkingV1().Ingresses(namespace).List(
 		context.TODO(),
 		metav1.ListOptions{LabelSelector: labelSelector})
@@ -291,5 +293,5 @@ func countIngresses(clientset *kubernetes.Clientset, namespace string, labelSele
 			oldest = t
 		}
 	}
-	return len(ingresses.Items), translateTimestampSince(newest), translateTimestampSince(oldest), err
+	return len(ingresses.Items), newest, oldest, err
 }
