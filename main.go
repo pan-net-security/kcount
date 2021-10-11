@@ -55,14 +55,15 @@ func main() {
 	for _, config := range configs {
 		wg.Add(1)
 		go func(config *Config) {
+			defer wg.Done()
 			obj, err := getCount(config, flags.kind, flags.labelSelector)
 			if err != nil {
 				log.Print(err)
+				return
 			}
 			mu.Lock()
 			objects = append(objects, obj)
 			mu.Unlock()
-			defer wg.Done()
 		}(config)
 	}
 	wg.Wait()
