@@ -23,6 +23,7 @@ type Flags struct {
 	labelSelector string
 	kind          string
 	age           bool
+	timeout       int64
 }
 
 func ParseFlags() Flags {
@@ -30,6 +31,7 @@ func ParseFlags() Flags {
 	flag.StringVar(&f.labelSelector, "l", "", "k8s label selector, e.g env=prod")
 	flag.StringVar(&f.kind, "k", "pod", "k8s object kind")
 	flag.BoolVar(&f.age, "a", false, "print also age")
+	flag.Int64Var(&f.timeout, "t", 5, "cluster API call timeout in seconds")
 	flag.Parse()
 	return f
 }
@@ -56,7 +58,7 @@ func main() {
 		wg.Add(1)
 		go func(config *Config) {
 			defer wg.Done()
-			obj, err := getCount(config, flags.kind, flags.labelSelector)
+			obj, err := getCount(config, flags.kind, flags.labelSelector, flags.timeout)
 			if err != nil {
 				log.Print(err)
 				return
@@ -167,7 +169,7 @@ type Object struct {
 	oldest        ObjectTime
 }
 
-func getCount(config *Config, kind, labelSelector string) (Object, error) {
+func getCount(config *Config, kind, labelSelector string, timeout int64) (Object, error) {
 	clientSet, err := kubernetes.NewForConfig(config.restConfig)
 	if err != nil {
 		return Object{}, fmt.Errorf("generating clientSet: %v", err)
@@ -176,15 +178,15 @@ func getCount(config *Config, kind, labelSelector string) (Object, error) {
 	var newest, oldest metav1.Time
 	switch kind {
 	case "deployment", "deploy":
-		n, newest, oldest, err = countDeployments(clientSet, config.namespace, labelSelector)
+		n, newest, oldest, err = countDeployments(clientSet, config.namespace, labelSelector, timeout)
 	case "pod":
-		n, newest, oldest, err = countPods(clientSet, config.namespace, labelSelector)
+		n, newest, oldest, err = countPods(clientSet, config.namespace, labelSelector, timeout)
 	case "configMap", "configmap", "cm":
-		n, newest, oldest, err = countConfigMaps(clientSet, config.namespace, labelSelector)
+		n, newest, oldest, err = countConfigMaps(clientSet, config.namespace, labelSelector, timeout)
 	case "secret":
-		n, newest, oldest, err = countSecrets(clientSet, config.namespace, labelSelector)
+		n, newest, oldest, err = countSecrets(clientSet, config.namespace, labelSelector, timeout)
 	case "ingress", "ing":
-		n, newest, oldest, err = countIngresses(clientSet, config.namespace, labelSelector)
+		n, newest, oldest, err = countIngresses(clientSet, config.namespace, labelSelector, timeout)
 	default:
 		return Object{}, fmt.Errorf("unsupported kind: %s", kind)
 	}
@@ -237,10 +239,10 @@ func printObjects(objects []Object, age bool) {
 	tw.Flush()
 }
 
-func countDeployments(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, metav1.Time, metav1.Time, error) {
+func countDeployments(clientset *kubernetes.Clientset, namespace string, labelSelector string, timeoutSeconds int64) (int, metav1.Time, metav1.Time, error) {
 	deployments, err := clientset.AppsV1().Deployments(namespace).List(
 		context.TODO(),
-		metav1.ListOptions{LabelSelector: labelSelector})
+		metav1.ListOptions{LabelSelector: labelSelector, TimeoutSeconds: &timeoutSeconds})
 	if err != nil {
 		return 0, metav1.Time{}, metav1.Time{}, err
 	}
@@ -253,10 +255,10 @@ func countDeployments(clientset *kubernetes.Clientset, namespace string, labelSe
 	return count, newest, oldest, nil
 }
 
-func countPods(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, metav1.Time, metav1.Time, error) {
+func countPods(clientset *kubernetes.Clientset, namespace string, labelSelector string, timeoutSeconds int64) (int, metav1.Time, metav1.Time, error) {
 	pods, err := clientset.CoreV1().Pods(namespace).List(
 		context.TODO(),
-		metav1.ListOptions{LabelSelector: labelSelector})
+		metav1.ListOptions{LabelSelector: labelSelector, TimeoutSeconds: &timeoutSeconds})
 	if err != nil {
 		return 0, metav1.Time{}, metav1.Time{}, err
 	}
@@ -269,10 +271,10 @@ func countPods(clientset *kubernetes.Clientset, namespace string, labelSelector 
 	return count, newest, oldest, nil
 }
 
-func countConfigMaps(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, metav1.Time, metav1.Time, error) {
+func countConfigMaps(clientset *kubernetes.Clientset, namespace string, labelSelector string, timeoutSeconds int64) (int, metav1.Time, metav1.Time, error) {
 	configMaps, err := clientset.CoreV1().ConfigMaps(namespace).List(
 		context.TODO(),
-		metav1.ListOptions{LabelSelector: labelSelector})
+		metav1.ListOptions{LabelSelector: labelSelector, TimeoutSeconds: &timeoutSeconds})
 	if err != nil {
 		return 0, metav1.Time{}, metav1.Time{}, err
 	}
@@ -285,10 +287,10 @@ func countConfigMaps(clientset *kubernetes.Clientset, namespace string, labelSel
 	return count, newest, oldest, nil
 }
 
-func countSecrets(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, metav1.Time, metav1.Time, error) {
+func countSecrets(clientset *kubernetes.Clientset, namespace string, labelSelector string, timeoutSeconds int64) (int, metav1.Time, metav1.Time, error) {
 	secrets, err := clientset.CoreV1().Secrets(namespace).List(
 		context.TODO(),
-		metav1.ListOptions{LabelSelector: labelSelector})
+		metav1.ListOptions{LabelSelector: labelSelector, TimeoutSeconds: &timeoutSeconds})
 	if err != nil {
 		return 0, metav1.Time{}, metav1.Time{}, err
 	}
@@ -301,10 +303,10 @@ func countSecrets(clientset *kubernetes.Clientset, namespace string, labelSelect
 	return count, newest, oldest, nil
 }
 
-func countIngresses(clientset *kubernetes.Clientset, namespace string, labelSelector string) (int, metav1.Time, metav1.Time, error) {
+func countIngresses(clientset *kubernetes.Clientset, namespace string, labelSelector string, timeoutSeconds int64) (int, metav1.Time, metav1.Time, error) {
 	ingresses, err := clientset.NetworkingV1().Ingresses(namespace).List(
 		context.TODO(),
-		metav1.ListOptions{LabelSelector: labelSelector})
+		metav1.ListOptions{LabelSelector: labelSelector, TimeoutSeconds: &timeoutSeconds})
 	if err != nil {
 		return 0, metav1.Time{}, metav1.Time{}, err
 	}
