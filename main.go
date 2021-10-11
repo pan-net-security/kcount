@@ -28,8 +28,8 @@ type Flags struct {
 
 func ParseFlags() Flags {
 	var f Flags
-	flag.StringVar(&f.labelSelector, "l", "", "k8s label selector, e.g env=prod")
-	flag.StringVar(&f.kind, "k", "pod", "k8s object kind")
+	flag.StringVar(&f.labelSelector, "l", "", "label selector, e.g. env=prod")
+	flag.StringVar(&f.kind, "k", "pod", "object kind")
 	flag.BoolVar(&f.age, "a", false, "print also age")
 	flag.Int64Var(&f.timeout, "t", 5, "cluster API call timeout in seconds")
 	flag.Parse()
