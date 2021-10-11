@@ -220,6 +220,9 @@ func getCount(config *Config, kind, labelSelector string, timeout int64) (Object
 // }
 
 func printObjects(objects []Object, age bool) {
+	if len(objects) == 0 {
+		return
+	}
 	tw := new(tabwriter.Writer).Init(os.Stdout, 0, 8, 2, ' ', 0)
 	if age {
 		const format = "%v\t%v\t%v\t%v\t%v\t%s\t%s\n"
