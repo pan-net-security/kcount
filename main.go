@@ -42,7 +42,7 @@ func main() {
 	log.SetPrefix(os.Args[0] + ": ")
 	log.SetFlags(0)
 
-	var configs []*Config
+	var configs []Config
 	configs, err := getConfigs(flag.Args())
 	if err != nil {
 		log.Fatalf("getting configs: %v", err)
@@ -56,7 +56,7 @@ func main() {
 	var wg sync.WaitGroup
 	for _, config := range configs {
 		wg.Add(1)
-		go func(config *Config) {
+		go func(config Config) {
 			defer wg.Done()
 			obj, err := getCount(config, flags.kind, flags.labelSelector, flags.timeout)
 			if err != nil {
@@ -92,7 +92,7 @@ type Config struct {
 	cluster, namespace string
 }
 
-func getConfigs(kubeconfigs []string) ([]*Config, error) {
+func getConfigs(kubeconfigs []string) ([]Config, error) {
 	configs, err := getConfigsFromKubeconfigs(kubeconfigs)
 	if err != nil {
 		return nil, err
@@ -111,8 +111,8 @@ func getConfigs(kubeconfigs []string) ([]*Config, error) {
 	return configs, err
 }
 
-func getConfigsFromKubeconfigs(kubeconfigs []string) ([]*Config, error) {
-	var configs []*Config
+func getConfigsFromKubeconfigs(kubeconfigs []string) ([]Config, error) {
+	var configs []Config
 
 	for _, kubeconfig := range kubeconfigs {
 		apiConfig, err := clientcmd.LoadFromFile(kubeconfig)
@@ -129,22 +129,25 @@ func getConfigsFromKubeconfigs(kubeconfigs []string) ([]*Config, error) {
 		namespace := apiConfig.Contexts[apiConfig.CurrentContext].Namespace
 		cluster := apiConfig.Contexts[apiConfig.CurrentContext].Cluster
 
-		configs = append(configs, &Config{restConfig: restConfig, namespace: namespace, cluster: cluster})
+		configs = append(configs, Config{restConfig: restConfig, namespace: namespace, cluster: cluster})
 	}
 
 	return configs, nil
 }
 
-func getConfigFromCluster() (*Config, error) {
+func getConfigFromCluster() (Config, error) {
+	c := Config{}
 	restConfig, err := rest.InClusterConfig()
 	if err != nil {
-		return nil, err
+		return c, err
 	}
 	ns, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 	if err != nil {
-		return nil, err
+		return c, err
 	}
-	return &Config{restConfig: restConfig, namespace: string(ns)}, nil
+	c.restConfig = restConfig
+	c.namespace = string(ns)
+	return c, nil
 }
 
 type ObjectTime metav1.Time
@@ -169,7 +172,7 @@ type Object struct {
 	oldest        ObjectTime
 }
 
-func getCount(config *Config, kind, labelSelector string, timeout int64) (Object, error) {
+func getCount(config Config, kind, labelSelector string, timeout int64) (Object, error) {
 	clientSet, err := kubernetes.NewForConfig(config.restConfig)
 	if err != nil {
 		return Object{}, fmt.Errorf("generating clientSet: %v", err)
