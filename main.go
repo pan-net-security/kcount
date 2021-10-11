@@ -125,17 +125,6 @@ func getConfigs(kubeconfigs []string) ([]*Config, error) {
 	return configs, nil
 }
 
-// Object represents a kubernetes object.
-type Object struct {
-	cluster       string
-	namespace     string
-	kind          string
-	labelSelector string
-	count         int
-	newest        ObjectTime
-	oldest        ObjectTime
-}
-
 type ObjectTime metav1.Time
 
 // String returns the elapsed time since timestamp in
@@ -145,6 +134,17 @@ func (o ObjectTime) String() string {
 		return "<unknown>"
 	}
 	return duration.HumanDuration(time.Since(o.Time))
+}
+
+// Object represents a kubernetes object.
+type Object struct {
+	cluster       string
+	namespace     string
+	kind          string
+	labelSelector string
+	count         int
+	newest        ObjectTime
+	oldest        ObjectTime
 }
 
 func getCount(config *Config, kind, labelSelector string) (Object, error) {
