@@ -90,30 +90,37 @@ type Config struct {
 }
 
 func getConfigs(kubeconfigs []string) ([]*Config, error) {
-	var configs []*Config
+	configs, err := getConfigsFromKubeconfigs(kubeconfigs)
+	if err != nil {
+		return nil, err
+	}
 
-	restConfig, err := rest.InClusterConfig()
-	if err != nil && err != rest.ErrNotInCluster {
-		return configs, err
+	configClust, err := getConfigFromCluster()
+	// If we are not in a cluster just return configs from kubeconfigs.
+	if err != nil && err == rest.ErrNotInCluster {
+		return configs, nil
 	}
-	if err != rest.ErrNotInCluster { // we are in cluster
-		data, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
-		if err != nil {
-			return configs, err
-		}
-		configs = append(configs, &Config{restConfig: restConfig, namespace: string(data)})
+	if err != nil {
+		return nil, err
 	}
+	configs = append(configs, configClust)
+
+	return configs, err
+}
+
+func getConfigsFromKubeconfigs(kubeconfigs []string) ([]*Config, error) {
+	var configs []*Config
 
 	for _, kubeconfig := range kubeconfigs {
 		apiConfig, err := clientcmd.LoadFromFile(kubeconfig)
 		if err != nil {
-			return configs, err
+			return nil, err
 		}
 
 		clientConfig := clientcmd.NewDefaultClientConfig(*apiConfig, nil)
 		restConfig, err := clientConfig.ClientConfig()
 		if err != nil {
-			return configs, err
+			return nil, err
 		}
 
 		namespace := apiConfig.Contexts[apiConfig.CurrentContext].Namespace
@@ -123,6 +130,18 @@ func getConfigs(kubeconfigs []string) ([]*Config, error) {
 	}
 
 	return configs, nil
+}
+
+func getConfigFromCluster() (*Config, error) {
+	restConfig, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+	ns, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	if err != nil {
+		return nil, err
+	}
+	return &Config{restConfig: restConfig, namespace: string(ns)}, nil
 }
 
 type ObjectTime metav1.Time
