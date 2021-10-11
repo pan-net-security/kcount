@@ -19,28 +19,30 @@ type Object struct {
 	kind          string
 	labelSelector string
 	count         int
-	newest        ObjectTime
-	oldest        ObjectTime
+	newest        objectTime
+	oldest        objectTime
 }
 
-func getCount(config Config, kind, labelSelector string, timeout int64) (Object, error) {
-	clientSet, err := kubernetes.NewForConfig(config.restConfig)
+// CountObjects counts objects of kind within a cluster.
+func CountObjects(cluster Cluster, kind, labelSelector string, timeout int64) (Object, error) {
+	clientSet, err := kubernetes.NewForConfig(cluster.restConfig)
 	if err != nil {
 		return Object{}, fmt.Errorf("generating clientSet: %v", err)
 	}
+
 	var n int
 	var newest, oldest metav1.Time
 	switch kind {
 	case "deployment", "deploy":
-		n, newest, oldest, err = countDeployments(clientSet, config.namespace, labelSelector, timeout)
+		n, newest, oldest, err = countDeployments(clientSet, cluster.namespace, labelSelector, timeout)
 	case "pod":
-		n, newest, oldest, err = countPods(clientSet, config.namespace, labelSelector, timeout)
+		n, newest, oldest, err = countPods(clientSet, cluster.namespace, labelSelector, timeout)
 	case "configMap", "configmap", "cm":
-		n, newest, oldest, err = countConfigMaps(clientSet, config.namespace, labelSelector, timeout)
+		n, newest, oldest, err = countConfigMaps(clientSet, cluster.namespace, labelSelector, timeout)
 	case "secret":
-		n, newest, oldest, err = countSecrets(clientSet, config.namespace, labelSelector, timeout)
+		n, newest, oldest, err = countSecrets(clientSet, cluster.namespace, labelSelector, timeout)
 	case "ingress", "ing":
-		n, newest, oldest, err = countIngresses(clientSet, config.namespace, labelSelector, timeout)
+		n, newest, oldest, err = countIngresses(clientSet, cluster.namespace, labelSelector, timeout)
 	default:
 		return Object{}, fmt.Errorf("unsupported kind: %s", kind)
 	}
@@ -49,13 +51,13 @@ func getCount(config Config, kind, labelSelector string, timeout int64) (Object,
 	}
 
 	return Object{
-		cluster:       config.cluster,
-		namespace:     config.namespace,
+		cluster:       cluster.cluster,
+		namespace:     cluster.namespace,
 		kind:          kind,
 		labelSelector: labelSelector,
 		count:         n,
-		newest:        ObjectTime(newest),
-		oldest:        ObjectTime(oldest),
+		newest:        objectTime(newest),
+		oldest:        objectTime(oldest),
 	}, nil
 }
 
@@ -73,7 +75,8 @@ func getCount(config Config, kind, labelSelector string, timeout int64) (Object,
 // 	return true
 // }
 
-func printObjects(objects []Object, age bool) {
+// PrintObjects prints a table with Kubernetes objects.
+func PrintObjects(objects []Object, age bool) {
 	if len(objects) == 0 {
 		return
 	}
@@ -194,11 +197,11 @@ func countItems(items []metav1.ObjectMeta) (int, metav1.Time, metav1.Time) {
 	return len(items), newest, oldest
 }
 
-type ObjectTime metav1.Time
+type objectTime metav1.Time
 
 // String returns the elapsed time since timestamp in
 // human-readable approximation.
-func (o ObjectTime) String() string {
+func (o objectTime) String() string {
 	if o.IsZero() {
 		return "<unknown>"
 	}

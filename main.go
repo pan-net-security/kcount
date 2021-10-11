@@ -14,23 +14,23 @@ func main() {
 	log.SetPrefix(os.Args[0] + ": ")
 	log.SetFlags(0)
 
-	var configs []Config
-	configs, err := getConfigs(flag.Args())
+	clusters, err := Clusters(flag.Args())
 	if err != nil {
-		log.Fatalf("getting configs: %v", err)
+		log.Fatalf("getting cluster configs: %v", err)
 	}
-	if len(configs) == 0 {
+	if len(clusters) == 0 {
 		log.Fatal("run in cluster or supply at least one kubeconfig")
 	}
 
 	var mu sync.Mutex
 	var objects []Object
+
 	var wg sync.WaitGroup
-	for _, config := range configs {
+	for _, cluster := range clusters {
 		wg.Add(1)
-		go func(config Config) {
+		go func(cluster Cluster) {
 			defer wg.Done()
-			obj, err := getCount(config, flags.kind, flags.labelSelector, flags.timeout)
+			obj, err := CountObjects(cluster, flags.kind, flags.labelSelector, flags.timeout)
 			if err != nil {
 				log.Print(err)
 				return
@@ -38,7 +38,7 @@ func main() {
 			mu.Lock()
 			objects = append(objects, obj)
 			mu.Unlock()
-		}(config)
+		}(cluster)
 	}
 	wg.Wait()
 
@@ -54,5 +54,5 @@ func main() {
 		}
 		return false
 	})
-	printObjects(objects, flags.age)
+	PrintObjects(objects, flags.age)
 }
