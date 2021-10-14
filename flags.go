@@ -11,7 +11,7 @@ type Flags struct {
 
 func ParseFlags() Flags {
 	var f Flags
-	flag.StringVar(&f.labelSelector, "l", "", "label selector, e.g. env=prod")
+	flag.StringVar(&f.labelSelector, "l", "", "label selector (e.g. env=prod)")
 	flag.StringVar(&f.kind, "k", "pod", "object kind")
 	flag.BoolVar(&f.age, "a", false, "print also age")
 	flag.BoolVar(&f.byCount, "c", false, "sort by count (default by cluster and namespace)")

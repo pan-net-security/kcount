@@ -31,8 +31,7 @@ func main() {
 			defer wg.Done()
 			obj, err := CountObjects(cluster, flags.kind, flags.labelSelector)
 			if err != nil {
-				log.Print(err)
-				return
+				log.Fatal(err)
 			}
 			mu.Lock()
 			objects = append(objects, obj)
