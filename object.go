@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sort"
 	"text/tabwriter"
 	"time"
 
@@ -97,6 +98,25 @@ func PrintObjects(objects []Object, age bool) {
 		}
 	}
 	tw.Flush()
+}
+
+// SortObjects sorts objects optionally byCount and then by cluster name and
+// namespace name.
+func SortObjects(objects []Object, byCount bool) {
+	sort.Slice(objects, func(i, j int) bool {
+		if byCount {
+			if objects[i].count != objects[j].count {
+				return objects[i].count > objects[j].count
+			}
+		}
+		if objects[i].cluster != objects[j].cluster {
+			return objects[i].cluster < objects[j].cluster
+		}
+		if objects[i].namespace != objects[j].namespace {
+			return objects[i].namespace < objects[j].namespace
+		}
+		return false
+	})
 }
 
 func countDeployments(clientset *kubernetes.Clientset, namespace string, labelSelector string, timeoutSeconds int64) (int, metav1.Time, metav1.Time, error) {
