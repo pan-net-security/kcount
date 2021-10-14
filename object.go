@@ -90,8 +90,8 @@ func PrintObjects(objects []Object, age bool) {
 		}
 	} else {
 		const format = "%v\t%v\t%v\t%v\t%v\n"
-		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label", "Kind", "Count")
-		fmt.Fprintf(tw, format, "-------", "---------", "-----", "----", "-----")
+		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label selector", "Kind", "Count")
+		fmt.Fprintf(tw, format, "-------", "---------", "--------------", "----", "-----")
 		for _, o := range objects {
 			fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count)
 		}
