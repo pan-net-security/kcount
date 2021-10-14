@@ -24,8 +24,10 @@ type Object struct {
 	oldest        objectTime
 }
 
+const timeout = 5 // cluster API call timeout in seconds
+
 // CountObjects counts objects of kind within a cluster.
-func CountObjects(cluster Cluster, kind, labelSelector string, timeout int64) (Object, error) {
+func CountObjects(cluster Cluster, kind, labelSelector string) (Object, error) {
 	clientSet, err := kubernetes.NewForConfig(cluster.restConfig)
 	if err != nil {
 		return Object{}, fmt.Errorf("generating clientSet: %v", err)

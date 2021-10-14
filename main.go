@@ -29,7 +29,7 @@ func main() {
 		wg.Add(1)
 		go func(cluster Cluster) {
 			defer wg.Done()
-			obj, err := CountObjects(cluster, flags.kind, flags.labelSelector, flags.timeout)
+			obj, err := CountObjects(cluster, flags.kind, flags.labelSelector)
 			if err != nil {
 				log.Print(err)
 				return
