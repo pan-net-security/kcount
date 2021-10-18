@@ -13,7 +13,9 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// K8sObject represents a kubernetes object.
+// K8sObject represents count and age of a Kubernetes object. The object is of a
+// given kind, in a given cluster and namespace and matching a given label
+// selector.
 type K8sObject struct {
 	cluster       string
 	namespace     string
