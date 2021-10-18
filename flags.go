@@ -9,7 +9,7 @@ type Flags struct {
 	byCount       bool
 }
 
-func ParseFlags() Flags {
+func parseFlags() Flags {
 	var f Flags
 	flag.StringVar(&f.labelSelector, "l", "", "label selector (e.g. env=prod)")
 	flag.StringVar(&f.kind, "k", "pod", "object kind")

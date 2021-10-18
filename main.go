@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	flags := ParseFlags()
+	flags := parseFlags()
 
 	log.SetPrefix(os.Args[0] + ": ")
 	log.SetFlags(0)
