@@ -22,7 +22,7 @@ func main() {
 	}
 
 	var mu sync.Mutex
-	var objects []Object
+	var objects []K8sObject
 
 	var wg sync.WaitGroup
 	for _, cluster := range clusters {

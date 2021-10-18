@@ -13,8 +13,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// Object represents a kubernetes object.
-type Object struct {
+// K8sObject represents a kubernetes object.
+type K8sObject struct {
 	cluster       string
 	namespace     string
 	kind          string
@@ -27,10 +27,10 @@ type Object struct {
 const timeout = 5 // cluster API call timeout in seconds
 
 // CountObjects counts objects of kind within a cluster.
-func CountObjects(cluster Cluster, kind, labelSelector string) (Object, error) {
+func CountObjects(cluster Cluster, kind, labelSelector string) (K8sObject, error) {
 	clientSet, err := kubernetes.NewForConfig(cluster.restConfig)
 	if err != nil {
-		return Object{}, fmt.Errorf("generating clientSet: %v", err)
+		return K8sObject{}, fmt.Errorf("generating clientSet: %v", err)
 	}
 
 	var n int
@@ -47,13 +47,13 @@ func CountObjects(cluster Cluster, kind, labelSelector string) (Object, error) {
 	case "ingress", "ing":
 		n, newest, oldest, err = countIngresses(clientSet, cluster.namespace, labelSelector, timeout)
 	default:
-		return Object{}, fmt.Errorf("unsupported kind: %s", kind)
+		return K8sObject{}, fmt.Errorf("unsupported kind: %s", kind)
 	}
 	if err != nil {
-		return Object{}, fmt.Errorf("counting %s objects: %v", kind, err)
+		return K8sObject{}, fmt.Errorf("counting %s objects: %v", kind, err)
 	}
 
-	return Object{
+	return K8sObject{
 		cluster:       cluster.cluster,
 		namespace:     cluster.namespace,
 		kind:          kind,
@@ -79,7 +79,7 @@ func CountObjects(cluster Cluster, kind, labelSelector string) (Object, error) {
 // }
 
 // PrintObjects prints a table with Kubernetes objects.
-func PrintObjects(objects []Object, age bool) {
+func PrintObjects(objects []K8sObject, age bool) {
 	if len(objects) == 0 {
 		return
 	}
@@ -104,7 +104,7 @@ func PrintObjects(objects []Object, age bool) {
 
 // SortObjects sorts objects optionally byCount and then by cluster name and
 // namespace name.
-func SortObjects(objects []Object, byCount bool) {
+func SortObjects(objects []K8sObject, byCount bool) {
 	sort.Slice(objects, func(i, j int) bool {
 		if byCount {
 			if objects[i].count != objects[j].count {
