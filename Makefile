@@ -10,4 +10,6 @@ arch = $(word 2, $(temp))
 release: $(PLATFORMS)
 
 $(PLATFORMS):
-	GOOS=$(os) GOARCH=$(arch) go build -o kcount-$(os)-$(arch)
+	GOOS=$(os) GOARCH=$(arch) go build -ldflags "-w" -o kcount-$(os)-$(arch)
+	tar -cf - kcount-$(os)-$(arch) | gzip -9c > kcount-$(os)-$(arch).tar.gz
+	rm -f kcount-$(os)-$(arch)
