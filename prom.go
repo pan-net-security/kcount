@@ -9,26 +9,20 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var (
-	podsCount = promauto.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name: "pods_total",
-			Help: "The total number of pods",
-		},
-		[]string{"cluster", "namespace", "labelSelector"},
-	)
-)
-
 func recordMetrics(clusters []Cluster, flags Flags) {
+	objectCount := promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "objects_total",
+			Help: "The total number of kubernetes objects",
+		},
+		[]string{"cluster", "namespace", "labelSelector", "kind"},
+	)
 	go func() {
 		for {
 			objects := CountObjectsAcrossClusters(clusters, flags)
 			for _, obj := range objects {
-				switch obj.kind {
-				case "pod":
-					podsCount.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector).Set(float64(obj.count))
+				objectCount.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector, obj.kind).Set(float64(obj.count))
 
-				}
 			}
 			time.Sleep(2 * time.Second)
 		}

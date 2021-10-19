@@ -61,15 +61,15 @@ func CountObjects(cluster Cluster, kind, labelSelector string) (K8sObject, error
 	var n int
 	var newest, oldest metav1.Time
 	switch kind {
-	case "deployment", "deploy":
+	case "deployment":
 		n, newest, oldest, err = countDeployments(clientSet, cluster.namespace, labelSelector, timeout)
 	case "pod":
 		n, newest, oldest, err = countPods(clientSet, cluster.namespace, labelSelector, timeout)
-	case "configMap", "configmap", "cm":
+	case "configmap":
 		n, newest, oldest, err = countConfigMaps(clientSet, cluster.namespace, labelSelector, timeout)
 	case "secret":
 		n, newest, oldest, err = countSecrets(clientSet, cluster.namespace, labelSelector, timeout)
-	case "ingress", "ing":
+	case "ingress":
 		n, newest, oldest, err = countIngresses(clientSet, cluster.namespace, labelSelector, timeout)
 	default:
 		return K8sObject{}, fmt.Errorf("unsupported kind: %s", kind)
