@@ -88,8 +88,8 @@ func PrintObjects(objects []K8sObject, age bool) {
 	tw := new(tabwriter.Writer).Init(os.Stdout, 0, 8, 2, ' ', 0)
 	if age {
 		const format = "%v\t%v\t%v\t%v\t%v\t%s\t%s\n"
-		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label", "Kind", "Count", "Newest", "Oldest")
-		fmt.Fprintf(tw, format, "-------", "---------", "-----", "----", "-----", "------", "------")
+		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label selector", "Kind", "Count", "Newest", "Oldest")
+		fmt.Fprintf(tw, format, "-------", "---------", "--------------", "----", "-----", "------", "------")
 		for _, o := range objects {
 			fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count, o.newest, o.oldest)
 		}
