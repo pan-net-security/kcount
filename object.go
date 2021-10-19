@@ -35,17 +35,24 @@ func CountObjectsAcrossClusters(clusters []Cluster, flags Flags) []K8sObject {
 	ch := make(chan K8sObject)
 
 	for _, cluster := range clusters {
-		go func(cluster Cluster) {
-			obj, err := CountObjects(cluster, flags.kind, flags.labelSelector)
-			if err != nil {
-				log.Printf("counting objects in cluster %s: %v", cluster.cluster, err)
-			}
-			ch <- obj
-		}(cluster)
+		for _, kind := range flags.kind {
+			go func(cluster Cluster, kind string) {
+				obj, err := CountObjects(cluster, kind, flags.labelSelector)
+				if err != nil {
+					log.Printf("counting objects in cluster %s: %v", cluster.cluster, err)
+				}
+				ch <- obj
+			}(cluster, kind)
+		}
 	}
 
 	for range clusters {
-		objects = append(objects, <-ch)
+		for range flags.kind {
+			obj := <-ch
+			if obj != (K8sObject{}) { // check obj is not "empty"
+				objects = append(objects, obj)
+			}
+		}
 	}
 
 	return objects
