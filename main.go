@@ -11,8 +11,8 @@ func main() {
 	flags := parseFlags()
 
 	if !flags.daemon { // running as CLI app
-		log.SetPrefix(os.Args[0] + ": ")
 		log.SetFlags(0)
+		log.SetPrefix(os.Args[0] + ": ")
 	}
 
 	clusters, err := Clusters(flag.Args())
@@ -35,7 +35,9 @@ func main() {
 				time.Sleep(2 * time.Second)
 			}
 		}()
-		log.Fatal(exposeMetrics(":2112", "/metrics"))
+		addr, urlPath := ":2112", "/metrics"
+		log.Printf("exposing Prometheus metrics at %s%s", addr, urlPath)
+		log.Fatal(exposeMetrics(addr, urlPath))
 	} else { // running as CLI app
 		objects := CountObjectsAcrossClusters(clusters, flags)
 		SortObjects(objects)
