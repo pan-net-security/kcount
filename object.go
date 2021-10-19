@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"sort"
 	"text/tabwriter"
@@ -27,6 +28,28 @@ type K8sObject struct {
 }
 
 const timeout = 5 // cluster API call timeout in seconds
+
+// CountObjectsAcrossClusters counts objects across all clusters concurrently.
+func CountObjectsAcrossClusters(clusters []Cluster, flags Flags) []K8sObject {
+	var objects []K8sObject
+	ch := make(chan K8sObject)
+
+	for _, cluster := range clusters {
+		go func(cluster Cluster) {
+			obj, err := CountObjects(cluster, flags.kind, flags.labelSelector)
+			if err != nil {
+				log.Printf("counting objects in cluster %s: %v", cluster.cluster, err)
+			}
+			ch <- obj
+		}(cluster)
+	}
+
+	for range clusters {
+		objects = append(objects, <-ch)
+	}
+
+	return objects
+}
 
 // CountObjects counts objects of kind within a cluster.
 func CountObjects(cluster Cluster, kind, labelSelector string) (K8sObject, error) {

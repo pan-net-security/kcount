@@ -4,14 +4,10 @@ import (
 	"flag"
 	"log"
 	"os"
-	"sync"
 )
 
 func main() {
 	flags := parseFlags()
-
-	log.SetPrefix(os.Args[0] + ": ")
-	log.SetFlags(0)
 
 	clusters, err := Clusters(flag.Args())
 	if err != nil {
@@ -21,25 +17,15 @@ func main() {
 		log.Fatal("run in cluster or supply at least one kubeconfig")
 	}
 
-	var mu sync.Mutex
-	var objects []K8sObject
+	if flags.daemon {
+		recordMetrics(clusters, flags)
+		exposeMetrics()
+	} else { // running as CLI app
+		log.SetPrefix(os.Args[0] + ": ")
+		log.SetFlags(0)
 
-	var wg sync.WaitGroup
-	for _, cluster := range clusters {
-		wg.Add(1)
-		go func(cluster Cluster) {
-			defer wg.Done()
-			obj, err := CountObjects(cluster, flags.kind, flags.labelSelector)
-			if err != nil {
-				log.Fatal(err)
-			}
-			mu.Lock()
-			objects = append(objects, obj)
-			mu.Unlock()
-		}(cluster)
+		objects := CountObjectsAcrossClusters(clusters, flags)
+		SortObjects(objects, flags.byCount)
+		PrintObjects(objects, flags.age)
 	}
-	wg.Wait()
-
-	SortObjects(objects, flags.byCount)
-	PrintObjects(objects, flags.age)
 }
