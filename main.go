@@ -25,7 +25,7 @@ func main() {
 		log.SetFlags(0)
 
 		objects := CountObjectsAcrossClusters(clusters, flags)
-		SortObjects(objects, flags.byCount)
+		SortObjects(objects)
 		PrintObjects(objects, flags.age)
 	}
 }

@@ -134,14 +134,12 @@ func PrintObjects(objects []K8sObject, age bool) {
 	tw.Flush()
 }
 
-// SortObjects sorts objects optionally byCount and then by cluster name and
-// namespace name.
-func SortObjects(objects []K8sObject, byCount bool) {
+// SortObjects sorts objects by count and then by cluster name and namespace
+// name.
+func SortObjects(objects []K8sObject) {
 	sort.Slice(objects, func(i, j int) bool {
-		if byCount {
-			if objects[i].count != objects[j].count {
-				return objects[i].count > objects[j].count
-			}
+		if objects[i].count != objects[j].count {
+			return objects[i].count > objects[j].count
 		}
 		if objects[i].cluster != objects[j].cluster {
 			return objects[i].cluster < objects[j].cluster
