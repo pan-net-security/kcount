@@ -2,34 +2,37 @@ package main
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func recordMetrics(clusters []Cluster, flags Flags) {
-	objectCount := promauto.NewGaugeVec(
+var (
+	objectsCount = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name: "objects_total",
+			Name: "objects_count",
 			Help: "The total number of kubernetes objects",
 		},
 		[]string{"cluster", "namespace", "labelSelector", "kind"},
 	)
-	go func() {
-		for {
-			objects := CountObjectsAcrossClusters(clusters, flags)
-			for _, obj := range objects {
-				objectCount.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector, obj.kind).Set(float64(obj.count))
+	objectsNewest = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "objects_newest",
+			Help: "The age of the newest kubernetes object in Unix time",
+		},
+		[]string{"cluster", "namespace", "labelSelector", "kind"},
+	)
+	objectsOldest = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "objects_oldest",
+			Help: "The age of the oldest kubernetes object in Unix time",
+		},
+		[]string{"cluster", "namespace", "labelSelector", "kind"},
+	)
+)
 
-			}
-			time.Sleep(2 * time.Second)
-		}
-	}()
-}
-
-func exposeMetrics() {
-	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":2112", nil)
+func exposeMetrics(addr, urlPath string) error {
+	http.Handle(urlPath, promhttp.Handler())
+	return http.ListenAndServe(addr, nil)
 }
