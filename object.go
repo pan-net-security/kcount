@@ -143,6 +143,9 @@ func SortObjects(objects []K8sObject) {
 		if objects[i].count != objects[j].count {
 			return objects[i].count > objects[j].count
 		}
+		if objects[i].kind != objects[j].kind {
+			return objects[i].kind < objects[j].kind
+		}
 		if objects[i].cluster != objects[j].cluster {
 			return objects[i].cluster < objects[j].cluster
 		}
