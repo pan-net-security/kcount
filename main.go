@@ -29,8 +29,10 @@ func main() {
 				objects := CountObjectsAcrossClusters(clusters, flags)
 				for _, obj := range objects {
 					objectsCount.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector, obj.kind).Set(float64(obj.count))
-					objectsNewest.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector, obj.kind).Set(float64(obj.newest.Unix()))
-					objectsOldest.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector, obj.kind).Set(float64(obj.oldest.Unix()))
+					if flags.age {
+						objectsNewest.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector, obj.kind).Set(float64(obj.newest.Unix()))
+						objectsOldest.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector, obj.kind).Set(float64(obj.oldest.Unix()))
+					}
 				}
 				time.Sleep(2 * time.Second)
 			}
@@ -41,6 +43,6 @@ func main() {
 	} else { // running as CLI app
 		objects := CountObjectsAcrossClusters(clusters, flags)
 		SortObjects(objects)
-		PrintObjects(objects)
+		PrintObjects(objects, flags.age)
 	}
 }

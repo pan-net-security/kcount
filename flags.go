@@ -6,6 +6,7 @@ import (
 )
 
 type Flags struct {
+	age           bool
 	daemon        bool
 	kind          kinds
 	labelSelector string
@@ -29,9 +30,10 @@ func (k *kinds) Set(value string) error {
 func parseFlags() Flags {
 	var f Flags
 
-	flag.StringVar(&f.labelSelector, "l", "", "label selector (e.g. env=prod)")
-	flag.Var(&f.kind, "k", "object kind or kinds (default pod)")
+	flag.BoolVar(&f.age, "a", false, "show also age of newest and oldest object")
 	flag.BoolVar(&f.daemon, "d", false, "run as daemon exposing prometheus metrics")
+	flag.Var(&f.kind, "k", "object kind or kinds (default pod)")
+	flag.StringVar(&f.labelSelector, "l", "", "label selector (e.g. env=prod)")
 
 	flag.Parse()
 

@@ -111,17 +111,28 @@ func CountObjects(cluster Cluster, kind, labelSelector string) (K8sObject, error
 // }
 
 // PrintObjects prints a table with Kubernetes objects.
-func PrintObjects(objects []K8sObject) {
+func PrintObjects(objects []K8sObject, age bool) {
 	if len(objects) == 0 {
 		return
 	}
 	tw := new(tabwriter.Writer).Init(os.Stdout, 0, 8, 2, ' ', 0)
-	const format = "%v\t%v\t%v\t%v\t%v\t%s\t%s\n"
-	fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label selector", "Kind", "Count", "Newest", "Oldest")
-	fmt.Fprintf(tw, format, "-------", "---------", "--------------", "----", "-----", "------", "------")
-	for _, o := range objects {
-		fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count, o.newest, o.oldest)
+
+	if age {
+		const format = "%v\t%v\t%v\t%v\t%v\t%s\t%s\n"
+		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label selector", "Kind", "Count", "Newest", "Oldest")
+		fmt.Fprintf(tw, format, "-------", "---------", "--------------", "----", "-----", "------", "------")
+		for _, o := range objects {
+			fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count, o.newest, o.oldest)
+		}
+	} else {
+		const format = "%v\t%v\t%v\t%v\t%v\n"
+		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label selector", "Kind", "Count")
+		fmt.Fprintf(tw, format, "-------", "---------", "--------------", "----", "-----")
+		for _, o := range objects {
+			fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count)
+		}
 	}
+
 	tw.Flush()
 }
 
