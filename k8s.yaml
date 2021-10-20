@@ -1,0 +1,62 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kcount
+spec:
+  selector:
+    app: kcount
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 2112
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kcount
+  labels:
+    app: kcount
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kcount
+  template:
+    metadata:
+      labels:
+        app: kcount
+    spec:
+      containers:
+      - name: kcount
+        image: ghcr.io/pan-net-security/kcount
+        # Kubeconfigs for secondary and tertiary cluster
+        volumeMounts:
+          - name: kubeconfig-secondary
+            mountPath: /root/.kube/kubeconfig-secondary
+            subPath: kubeconfig-secondary
+            readOnly: true
+          - name: kubeconfig-tertiary
+            mountPath: /root/.kube/kubeconfig-tertiary
+            subPath: kubeconfig-tertiary
+            readOnly: true
+        args:
+          - -l
+          - "env=prod"
+          - -d
+          - /root/.kube/kubeconfig-secondary
+          - /root/.kube/kubeconfig-tertiary
+      volumes:
+        - name: kubeconfig-secondary
+          secret:
+            secretName: kubeconfig-secondary
+            items:
+            - key: project.conf
+              path: kubeconfig-secondary
+        - name: kubeconfig-tertiary
+          secret:
+            secretName: kubeconfig-tertiary
+            items:
+            - key: project.conf
+              path: kubeconfig-tertiary
+      serviceAccountName: myuser

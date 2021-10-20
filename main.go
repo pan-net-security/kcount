@@ -4,14 +4,16 @@ import (
 	"flag"
 	"log"
 	"os"
-	"sync"
+	"time"
 )
 
 func main() {
 	flags := parseFlags()
 
-	log.SetPrefix(os.Args[0] + ": ")
-	log.SetFlags(0)
+	if !flags.daemon { // running as CLI app
+		log.SetFlags(0)
+		log.SetPrefix(os.Args[0] + ": ")
+	}
 
 	clusters, err := Clusters(flag.Args())
 	if err != nil {
@@ -21,25 +23,26 @@ func main() {
 		log.Fatal("run in cluster or supply at least one kubeconfig")
 	}
 
-	var mu sync.Mutex
-	var objects []K8sObject
-
-	var wg sync.WaitGroup
-	for _, cluster := range clusters {
-		wg.Add(1)
-		go func(cluster Cluster) {
-			defer wg.Done()
-			obj, err := CountObjects(cluster, flags.kind, flags.labelSelector)
-			if err != nil {
-				log.Fatal(err)
+	if flags.daemon {
+		go func() {
+			for {
+				objects := CountObjectsAcrossClusters(clusters, flags)
+				for _, obj := range objects {
+					objectsCount.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector, obj.kind).Set(float64(obj.count))
+					if flags.age {
+						objectsNewest.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector, obj.kind).Set(float64(obj.newest.Unix()))
+						objectsOldest.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector, obj.kind).Set(float64(obj.oldest.Unix()))
+					}
+				}
+				time.Sleep(2 * time.Second)
 			}
-			mu.Lock()
-			objects = append(objects, obj)
-			mu.Unlock()
-		}(cluster)
+		}()
+		addr, urlPath := ":2112", "/metrics"
+		log.Printf("exposing Prometheus metrics at %s%s", addr, urlPath)
+		log.Fatal(exposeMetrics(addr, urlPath))
+	} else { // running as CLI app
+		objects := CountObjectsAcrossClusters(clusters, flags)
+		SortObjects(objects)
+		PrintObjects(objects, flags.age)
 	}
-	wg.Wait()
-
-	SortObjects(objects, flags.byCount)
-	PrintObjects(objects, flags.age)
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"sort"
 	"text/tabwriter"
@@ -28,6 +29,35 @@ type K8sObject struct {
 
 const timeout = 5 // cluster API call timeout in seconds
 
+// CountObjectsAcrossClusters counts objects across all clusters concurrently.
+func CountObjectsAcrossClusters(clusters []Cluster, flags Flags) []K8sObject {
+	var objects []K8sObject
+	ch := make(chan K8sObject)
+
+	for _, cluster := range clusters {
+		for _, kind := range flags.kind {
+			go func(cluster Cluster, kind string) {
+				obj, err := CountObjects(cluster, kind, flags.labelSelector)
+				if err != nil {
+					log.Printf("counting objects in cluster %s: %v", cluster.cluster, err)
+				}
+				ch <- obj
+			}(cluster, kind)
+		}
+	}
+
+	for range clusters {
+		for range flags.kind {
+			obj := <-ch
+			if obj != (K8sObject{}) { // check obj is not "empty"
+				objects = append(objects, obj)
+			}
+		}
+	}
+
+	return objects
+}
+
 // CountObjects counts objects of kind within a cluster.
 func CountObjects(cluster Cluster, kind, labelSelector string) (K8sObject, error) {
 	clientSet, err := kubernetes.NewForConfig(cluster.restConfig)
@@ -38,15 +68,15 @@ func CountObjects(cluster Cluster, kind, labelSelector string) (K8sObject, error
 	var n int
 	var newest, oldest metav1.Time
 	switch kind {
-	case "deployment", "deploy":
+	case "deployment":
 		n, newest, oldest, err = countDeployments(clientSet, cluster.namespace, labelSelector, timeout)
 	case "pod":
 		n, newest, oldest, err = countPods(clientSet, cluster.namespace, labelSelector, timeout)
-	case "configMap", "configmap", "cm":
+	case "configmap":
 		n, newest, oldest, err = countConfigMaps(clientSet, cluster.namespace, labelSelector, timeout)
 	case "secret":
 		n, newest, oldest, err = countSecrets(clientSet, cluster.namespace, labelSelector, timeout)
-	case "ingress", "ing":
+	case "ingress":
 		n, newest, oldest, err = countIngresses(clientSet, cluster.namespace, labelSelector, timeout)
 	default:
 		return K8sObject{}, fmt.Errorf("unsupported kind: %s", kind)
@@ -86,6 +116,7 @@ func PrintObjects(objects []K8sObject, age bool) {
 		return
 	}
 	tw := new(tabwriter.Writer).Init(os.Stdout, 0, 8, 2, ' ', 0)
+
 	if age {
 		const format = "%v\t%v\t%v\t%v\t%v\t%s\t%s\n"
 		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label selector", "Kind", "Count", "Newest", "Oldest")
@@ -101,17 +132,16 @@ func PrintObjects(objects []K8sObject, age bool) {
 			fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count)
 		}
 	}
+
 	tw.Flush()
 }
 
-// SortObjects sorts objects optionally byCount and then by cluster name and
-// namespace name.
-func SortObjects(objects []K8sObject, byCount bool) {
+// SortObjects sorts objects by count and then by cluster name and namespace
+// name.
+func SortObjects(objects []K8sObject) {
 	sort.Slice(objects, func(i, j int) bool {
-		if byCount {
-			if objects[i].count != objects[j].count {
-				return objects[i].count > objects[j].count
-			}
+		if objects[i].count != objects[j].count {
+			return objects[i].count > objects[j].count
 		}
 		if objects[i].cluster != objects[j].cluster {
 			return objects[i].cluster < objects[j].cluster
