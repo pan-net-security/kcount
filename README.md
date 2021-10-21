@@ -38,5 +38,6 @@ binary for your system and architecture.
 kubectl apply -f k8s.yaml
 
 # Check Prometheus metrics
-kubectl run alpine --image=alpine --rm -it --restart=Never --command -- wget -O- kcount/metrics -timeout 5 | grep objects_
+kubectl run alpine --image=alpine --rm -it --restart=Never --command -- \
+  wget -O- kcount/metrics --timeout 5 | grep objects_
 ```
