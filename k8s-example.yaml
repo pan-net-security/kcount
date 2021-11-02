@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: kcount
-        image: ghcr.io/pan-net-security/kcount:main
+        image: ghcr.io/pan-net-security/kcount:latest
         # Kubeconfigs for secondary and tertiary cluster
         volumeMounts:
           - name: kubeconfig-secondary
