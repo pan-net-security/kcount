@@ -14,10 +14,10 @@ Cluster                Namespace  Label selector  Kind     Count  Newest  Oldest
 -------                ---------  --------------  ----     -----  ------  ------
 cluster1.example.com   ns1        env=prod        pod      68     1d4h    37d
 cluster2.example.com   ns1        env=prod        pod      68     1d4h    10d
-cluster2.example.com   ns1        env=prod        pod      42     23d     23d
+cluster3.example.com   ns1        env=prod        pod      42     23d     23d
 cluster1.example.com   ns1        env=prod        ingress  34     2d4h    137d
 cluster2.example.com   ns1        env=prod        ingress  34     2d4h    110d
-cluster2.example.com   ns1        env=prod        ingress  21     33d     123d
+cluster3.example.com   ns1        env=prod        ingress  21     33d     123d
 ```
 
 Installation
