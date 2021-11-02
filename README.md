@@ -35,9 +35,9 @@ binary for your system and architecture.
 
 ```
 # Deploy kcount service and deployment
-kubectl apply -f k8s.yaml
+kubectl apply -f k8s-example.yaml
 
 # Check Prometheus metrics
 kubectl run alpine --image=alpine --rm -it --restart=Never --command -- \
-  wget -O- kcount/metrics --timeout 5 | grep objects_
+wget -O- kcount/metrics --timeout 5 | grep objects_
 ```
