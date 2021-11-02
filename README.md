@@ -12,12 +12,12 @@ It can be used as CLI tool or as daemon (service) exposing Prometheus metrics.
 $ kcount -l env=prod -k ingress,pod -a ~/.kube/project/*/*
 Cluster                Namespace  Label selector  Kind     Count  Newest  Oldest
 -------                ---------  --------------  ----     -----  ------  ------
-cluster1.example.com   ns1        env=prod        ingress  34     2d4h    137d
-cluster2.example.com   ns1        env=prod        ingress  21     33d     123d
-cluster2.example.com   ns1        env=prod        ingress  34     2d4h    110d
 cluster1.example.com   ns1        env=prod        pod      68     1d4h    37d
-cluster2.example.com   ns1        env=prod        pod      42     23d     23d
 cluster2.example.com   ns1        env=prod        pod      68     1d4h    10d
+cluster2.example.com   ns1        env=prod        pod      42     23d     23d
+cluster1.example.com   ns1        env=prod        ingress  34     2d4h    137d
+cluster2.example.com   ns1        env=prod        ingress  34     2d4h    110d
+cluster2.example.com   ns1        env=prod        ingress  21     33d     123d
 ```
 
 Installation
