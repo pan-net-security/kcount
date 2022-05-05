@@ -1,3 +1,4 @@
+// Kcount counts Kubernetes objects across clusters.
 package main
 
 import (
@@ -28,10 +29,10 @@ func main() {
 			for {
 				counts := CountObjectsAcrossClusters(clusters, flags)
 				for _, count := range counts {
-					objectsCount.WithLabelValues(count.cluster, count.namespace, count.labelSelector, count.kind).Set(float64(count.count))
+					objectsCount.WithLabelValues(count.Cluster, count.Namespace, count.LabelSelector, count.Kind).Set(float64(count.Count))
 					if flags.age {
-						objectsNewest.WithLabelValues(count.cluster, count.namespace, count.labelSelector, count.kind).Set(float64(count.newest.Unix()))
-						objectsOldest.WithLabelValues(count.cluster, count.namespace, count.labelSelector, count.kind).Set(float64(count.oldest.Unix()))
+						objectsNewest.WithLabelValues(count.Cluster, count.Namespace, count.LabelSelector, count.Kind).Set(float64(count.Newest.Unix()))
+						objectsOldest.WithLabelValues(count.Cluster, count.Namespace, count.LabelSelector, count.Kind).Set(float64(count.Oldest.Unix()))
 					}
 				}
 				time.Sleep(2 * time.Second)

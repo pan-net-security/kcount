@@ -16,16 +16,17 @@ import (
 
 const timeout = 5 // cluster API call timeout in seconds
 
-// Count represents count and age of Kubernetes objects. The objects are of
-// given kind, in given cluster and namespace and matching given label selector.
+// Count represents count and age of Kubernetes objects. The objects are inside
+// a given cluster and namespace, of given kind and matching given label
+// selector.
 type Count struct {
-	cluster       string
-	namespace     string
-	kind          string
-	labelSelector string
-	count         int
-	newest        objectTime
-	oldest        objectTime
+	Cluster       string
+	Namespace     string
+	Kind          string
+	LabelSelector string
+	Count         int
+	Newest        objectTime
+	Oldest        objectTime
 }
 
 // CountObjectsAcrossClusters counts objects across all clusters concurrently.
@@ -85,13 +86,13 @@ func countObjects(cluster Cluster, kind, labelSelector string) (Count, error) {
 	}
 
 	return Count{
-		cluster:       cluster.cluster,
-		namespace:     cluster.namespace,
-		kind:          kind,
-		labelSelector: labelSelector,
-		count:         n,
-		newest:        objectTime(newest),
-		oldest:        objectTime(oldest),
+		Cluster:       cluster.cluster,
+		Namespace:     cluster.namespace,
+		Kind:          kind,
+		LabelSelector: labelSelector,
+		Count:         n,
+		Newest:        objectTime(newest),
+		Oldest:        objectTime(oldest),
 	}, nil
 }
 
@@ -101,23 +102,24 @@ type Counts []Count
 // name.
 func (c Counts) Sort() {
 	sort.Slice(c, func(i, j int) bool {
-		if c[i].count != c[j].count {
-			return c[i].count > c[j].count
+		if c[i].Count != c[j].Count {
+			return c[i].Count > c[j].Count
 		}
-		if c[i].kind != c[j].kind {
-			return c[i].kind < c[j].kind
+		if c[i].Kind != c[j].Kind {
+			return c[i].Kind < c[j].Kind
 		}
-		if c[i].cluster != c[j].cluster {
-			return c[i].cluster < c[j].cluster
+		if c[i].Cluster != c[j].Cluster {
+			return c[i].Cluster < c[j].Cluster
 		}
-		if c[i].namespace != c[j].namespace {
-			return c[i].namespace < c[j].namespace
+		if c[i].Namespace != c[j].Namespace {
+			return c[i].Namespace < c[j].Namespace
 		}
 		return false
 	})
 }
 
-// Print prints a table with Kubernetes objects.
+// Print prints a table with Kubernetes objects. The table can optionally
+// contain the age of the objects.
 func (c Counts) Print(age bool) {
 	if len(c) == 0 {
 		return
@@ -131,8 +133,8 @@ func (c Counts) Print(age bool) {
 		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label selector", "Kind", "Count", "Newest", "Oldest")
 		fmt.Fprintf(tw, format, "-------", "---------", "--------------", "----", "-----", "------", "------")
 		for _, o := range c {
-			total += o.count
-			fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count, o.newest, o.oldest)
+			total += o.Count
+			fmt.Fprintf(tw, format, o.Cluster, o.Namespace, o.LabelSelector, o.Kind, o.Count, o.Newest, o.Oldest)
 		}
 		fmt.Fprintf(tw, format, "", "", "", "", "-----", "", "")
 		fmt.Fprintf(tw, format, "", "", "", "", total, "", "")
@@ -141,8 +143,8 @@ func (c Counts) Print(age bool) {
 		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label selector", "Kind", "Count")
 		fmt.Fprintf(tw, format, "-------", "---------", "--------------", "----", "-----")
 		for _, o := range c {
-			total += o.count
-			fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count)
+			total += o.Count
+			fmt.Fprintf(tw, format, o.Cluster, o.Namespace, o.LabelSelector, o.Kind, o.Count)
 		}
 		fmt.Fprintf(tw, format, "", "", "", "", "-----")
 		fmt.Fprintf(tw, format, "", "", "", "", total)

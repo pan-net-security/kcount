@@ -7,7 +7,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// Cluster represents configuration of a kubernetes cluster.
+// Cluster represents configuration of a Kubernetes cluster.
 type Cluster struct {
 	restConfig         *rest.Config
 	cluster, namespace string
