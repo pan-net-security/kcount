@@ -26,12 +26,12 @@ func main() {
 	if flags.daemon {
 		go func() {
 			for {
-				objects := CountObjectsAcrossClusters(clusters, flags)
-				for _, obj := range objects {
-					objectsCount.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector, obj.kind).Set(float64(obj.count))
+				counts := CountObjectsAcrossClusters(clusters, flags)
+				for _, count := range counts {
+					objectsCount.WithLabelValues(count.cluster, count.namespace, count.labelSelector, count.kind).Set(float64(count.count))
 					if flags.age {
-						objectsNewest.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector, obj.kind).Set(float64(obj.newest.Unix()))
-						objectsOldest.WithLabelValues(obj.cluster, obj.namespace, obj.labelSelector, obj.kind).Set(float64(obj.oldest.Unix()))
+						objectsNewest.WithLabelValues(count.cluster, count.namespace, count.labelSelector, count.kind).Set(float64(count.newest.Unix()))
+						objectsOldest.WithLabelValues(count.cluster, count.namespace, count.labelSelector, count.kind).Set(float64(count.oldest.Unix()))
 					}
 				}
 				time.Sleep(2 * time.Second)
@@ -41,8 +41,8 @@ func main() {
 		log.Printf("exposing Prometheus metrics at %s%s", addr, urlPath)
 		log.Fatal(exposeMetrics(addr, urlPath))
 	} else { // running as CLI app
-		objects := CountObjectsAcrossClusters(clusters, flags)
-		SortObjects(objects)
-		PrintObjects(objects, flags.age)
+		counts := CountObjectsAcrossClusters(clusters, flags)
+		counts.Sort()
+		counts.Print(flags.age)
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// Flags are command line flags.
 type Flags struct {
 	allNamespaces bool
 	age           bool
