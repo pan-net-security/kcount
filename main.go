@@ -15,7 +15,7 @@ func main() {
 		log.SetPrefix(os.Args[0] + ": ")
 	}
 
-	clusters, err := Clusters(flag.Args())
+	clusters, err := Clusters(flag.Args(), flags.allNamespaces)
 	if err != nil {
 		log.Fatalf("getting cluster configs: %v", err)
 	}

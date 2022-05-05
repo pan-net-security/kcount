@@ -6,6 +6,7 @@ import (
 )
 
 type Flags struct {
+	allNamespaces bool
 	age           bool
 	daemon        bool
 	kind          kinds
@@ -30,6 +31,7 @@ func (k *kinds) Set(value string) error {
 func parseFlags() Flags {
 	var f Flags
 
+	flag.BoolVar(&f.allNamespaces, "A", false, "count objects across all namespaces")
 	flag.BoolVar(&f.age, "a", false, "show also age of newest and oldest object")
 	flag.BoolVar(&f.daemon, "d", false, "run as daemon exposing prometheus metrics")
 	flag.Var(&f.kind, "k", "object kind or kinds (default pod)")
