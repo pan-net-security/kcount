@@ -14,10 +14,9 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// K8sObject represents count and age of a Kubernetes object. The object is of a
-// given kind, in a given cluster and namespace and matching a given label
-// selector.
-type K8sObject struct {
+// Count represents count and age of Kubernetes objects. The objects are of
+// given kind, in given cluster and namespace and matching given label selector.
+type Count struct {
 	cluster       string
 	namespace     string
 	kind          string
@@ -30,9 +29,9 @@ type K8sObject struct {
 const timeout = 5 // cluster API call timeout in seconds
 
 // CountObjectsAcrossClusters counts objects across all clusters concurrently.
-func CountObjectsAcrossClusters(clusters []Cluster, flags Flags) []K8sObject {
-	var objects []K8sObject
-	ch := make(chan K8sObject)
+func CountObjectsAcrossClusters(clusters []Cluster, flags Flags) []Count {
+	var objects []Count
+	ch := make(chan Count)
 
 	for _, cluster := range clusters {
 		for _, kind := range flags.kind {
@@ -49,7 +48,7 @@ func CountObjectsAcrossClusters(clusters []Cluster, flags Flags) []K8sObject {
 	for range clusters {
 		for range flags.kind {
 			obj := <-ch
-			if obj != (K8sObject{}) { // check obj is not "empty"
+			if obj != (Count{}) { // check obj is not "empty"
 				objects = append(objects, obj)
 			}
 		}
@@ -59,10 +58,10 @@ func CountObjectsAcrossClusters(clusters []Cluster, flags Flags) []K8sObject {
 }
 
 // CountObjects counts objects of kind within a cluster.
-func CountObjects(cluster Cluster, kind, labelSelector string) (K8sObject, error) {
+func CountObjects(cluster Cluster, kind, labelSelector string) (Count, error) {
 	clientSet, err := kubernetes.NewForConfig(cluster.restConfig)
 	if err != nil {
-		return K8sObject{}, fmt.Errorf("generating clientSet: %v", err)
+		return Count{}, fmt.Errorf("generating clientSet: %v", err)
 	}
 
 	var n int
@@ -79,13 +78,13 @@ func CountObjects(cluster Cluster, kind, labelSelector string) (K8sObject, error
 	case "ingress":
 		n, newest, oldest, err = countIngresses(clientSet, cluster.namespace, labelSelector, timeout)
 	default:
-		return K8sObject{}, fmt.Errorf("unsupported kind: %s", kind)
+		return Count{}, fmt.Errorf("unsupported kind: %s", kind)
 	}
 	if err != nil {
-		return K8sObject{}, fmt.Errorf("counting %s objects: %v", kind, err)
+		return Count{}, fmt.Errorf("counting %s objects: %v", kind, err)
 	}
 
-	return K8sObject{
+	return Count{
 		cluster:       cluster.cluster,
 		namespace:     cluster.namespace,
 		kind:          kind,
@@ -111,7 +110,7 @@ func CountObjects(cluster Cluster, kind, labelSelector string) (K8sObject, error
 // }
 
 // PrintObjects prints a table with Kubernetes objects.
-func PrintObjects(objects []K8sObject, age bool) {
+func PrintObjects(objects []Count, age bool) {
 	if len(objects) == 0 {
 		return
 	}
@@ -146,7 +145,7 @@ func PrintObjects(objects []K8sObject, age bool) {
 
 // SortObjects sorts objects by count and then by cluster name and namespace
 // name.
-func SortObjects(objects []K8sObject) {
+func SortObjects(objects []Count) {
 	sort.Slice(objects, func(i, j int) bool {
 		if objects[i].count != objects[j].count {
 			return objects[i].count > objects[j].count
