@@ -127,8 +127,8 @@ func PrintObjects(objects []K8sObject, age bool) {
 			total += o.count
 			fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count, o.newest, o.oldest)
 		}
-		fmt.Fprintf(tw, format, "-----", "", "", "", "-----", "", "")
-		fmt.Fprintf(tw, format, "Total", "", "", "", total, "", "")
+		fmt.Fprintf(tw, format, "", "", "", "", "-----", "", "")
+		fmt.Fprintf(tw, format, "", "", "", "", total, "", "")
 	} else {
 		const format = "%v\t%v\t%v\t%v\t%v\n"
 		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label selector", "Kind", "Count")
@@ -137,8 +137,8 @@ func PrintObjects(objects []K8sObject, age bool) {
 			total += o.count
 			fmt.Fprintf(tw, format, o.cluster, o.namespace, o.labelSelector, o.kind, o.count)
 		}
-		fmt.Fprintf(tw, format, "-----", "", "", "", "-----")
-		fmt.Fprintf(tw, format, "Total", "", "", "", total)
+		fmt.Fprintf(tw, format, "", "", "", "", "-----")
+		fmt.Fprintf(tw, format, "", "", "", "", total)
 	}
 
 	tw.Flush()

@@ -18,8 +18,8 @@ cluster3.example.com   ns1        env=prod        pod      42     23d     23d
 cluster1.example.com   ns1        env=prod        ingress  34     2d4h    137d
 cluster2.example.com   ns1        env=prod        ingress  34     2d4h    110d
 cluster3.example.com   ns1        env=prod        ingress  21     33d     123d
------                                                      -----
-Total                                                      267
+                                                           -----
+                                                           267
 ```
 
 Installation
