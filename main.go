@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -16,12 +17,24 @@ func main() {
 		log.SetPrefix(os.Args[0] + ": ")
 	}
 
-	clusters, err := Clusters(flag.Args(), flags.allNamespaces)
+	kubeconfigs := flag.Args()
+
+	if len(kubeconfigs) == 0 {
+		// KUBECONGIG can hold multiple kubeconfigs (separated by : on Linux/Mac)
+		for _, k := range strings.Split(os.Getenv("KUBECONFIG"), ":") {
+			if k != "" {
+				kubeconfigs = append(kubeconfigs, k)
+			}
+		}
+	}
+
+	if len(kubeconfigs) == 0 {
+		log.Fatal("run in cluster, set KUBECONFIG or supply at least one kubeconfig")
+	}
+
+	clusters, err := Clusters(kubeconfigs, flags.allNamespaces)
 	if err != nil {
 		log.Fatalf("getting cluster configs: %v", err)
-	}
-	if len(clusters) == 0 {
-		log.Fatal("run in cluster or supply at least one kubeconfig")
 	}
 
 	if flags.daemon {
