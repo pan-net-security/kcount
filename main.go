@@ -28,13 +28,13 @@ func main() {
 		}
 	}
 
-	if len(kubeconfigs) == 0 {
-		log.Fatal("run in cluster, set KUBECONFIG or supply at least one kubeconfig")
-	}
-
 	clusters, err := Clusters(kubeconfigs, flags.allNamespaces)
 	if err != nil {
 		log.Fatalf("getting cluster configs: %v", err)
+	}
+
+	if len(clusters) == 0 {
+		log.Fatal("run in cluster, set KUBECONFIG or supply at least one kubeconfig")
 	}
 
 	if flags.daemon {
