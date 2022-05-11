@@ -1,18 +1,33 @@
 # kcount
 
-`kcount` counts Kubernetes objects across clusters or namespaces. It gets the
-cluster configuration, including cluster name and namespace, from `KUBECONFIG`,
-supplied kubeconfig file(s) or from within a cluster (when running in a pod).
+`kcount` counts Kubernetes objects. It gets the cluster configuration from
+`KUBECONFIG` environment variable, supplied kubeconfig file(s) or from within a
+cluster (when running in a pod).
 
 It can be used as CLI tool or as daemon (service) exposing Prometheus metrics.
 
 ## CLI tool
 
-Count objects across multiple clusters using kubeconfig files supplied as
-command line arguments:
+Count several kinds of objects in all namespaces using KUBECONFIG environment
+variable:
 
 ```
-$ kcount -a -l env=prod -k ingress,pod ~/.kube/project/*/*
+$ kcount -k deployment,pod,configmap,secret,ingress -A
+Cluster               Namespace  Label selector  Kind        Count
+-------               ---------  --------------  ----        -----
+cluster1.example.com                             configmap   2736
+cluster1.example.com                             pod         499
+cluster1.example.com                             secret      358
+cluster1.example.com                             deployment  78
+cluster1.example.com                             ingress     40
+                                                             -----
+                                                             3711
+```
+
+Count pods (and show the age info) with a given label across multiple clusters:
+
+```
+$ kcount -a -l env=prod ~/.kube/project/*/*
 Cluster                Namespace  Label selector  Kind     Count  Newest  Oldest
 -------                ---------  --------------  ----     -----  ------  ------
 cluster1.example.com   ns1        env=prod        pod      68     1d4h    37d
@@ -23,21 +38,6 @@ cluster2.example.com   ns1        env=prod        ingress  34     2d4h    110d
 cluster3.example.com   ns1        env=prod        ingress  21     33d     123d
                                                            -----
                                                            267
-```
-
-Count objects in all namespaces using KUBECONFIG environment variable:
-
-```
-$ kcount -A -k deployment,pod,configmap,secret,ingress
-Cluster               Namespace  Label selector  Kind        Count
--------               ---------  --------------  ----        -----
-cluster1.example.com                             configmap   2736
-cluster1.example.com                             pod         499
-cluster1.example.com                             secret      358
-cluster1.example.com                             deployment  78
-cluster1.example.com                             ingress     40
-                                                             -----
-                                                             3711
 ```
 
 Installation
