@@ -30,33 +30,11 @@ spec:
       containers:
       - name: kcount
         image: ghcr.io/pan-net-security/kcount:latest
-        # Kubeconfigs for secondary and tertiary cluster
-        volumeMounts:
-          - name: kubeconfig-secondary
-            mountPath: /root/.kube/kubeconfig-secondary
-            subPath: kubeconfig-secondary
-            readOnly: true
-          - name: kubeconfig-tertiary
-            mountPath: /root/.kube/kubeconfig-tertiary
-            subPath: kubeconfig-tertiary
-            readOnly: true
+        resources:
+          limits:
+            memory: "128Mi" # 128 MiB
+            cpu: "500m"     # 0.5 CPU
         args:
-          - -l
-          - "env=prod"
+          - -a
           - -d
-          - /root/.kube/kubeconfig-secondary
-          - /root/.kube/kubeconfig-tertiary
-      volumes:
-        - name: kubeconfig-secondary
-          secret:
-            secretName: kubeconfig-secondary
-            items:
-            - key: project.conf
-              path: kubeconfig-secondary
-        - name: kubeconfig-tertiary
-          secret:
-            secretName: kubeconfig-tertiary
-            items:
-            - key: project.conf
-              path: kubeconfig-tertiary
-      serviceAccountName: myuser
+      serviceAccountName: default # CHANGEME

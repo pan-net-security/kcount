@@ -39,7 +39,7 @@ func CountObjectsAcrossClusters(clusters []Cluster, flags Flags) Counts {
 			go func(cluster Cluster, kind string) {
 				obj, err := countObjects(cluster, kind, flags.labelSelector)
 				if err != nil {
-					log.Printf("counting objects in cluster %s: %v", cluster.cluster, err)
+					log.Printf("counting objects in cluster '%s': %v", cluster.cluster, err)
 				}
 				ch <- obj
 			}(cluster, kind)
