@@ -1,8 +1,8 @@
 # kcount
 
-`kcount` counts Kubernetes objects. It gets the cluster configuration from
-`KUBECONFIG` environment variable, supplied kubeconfig file(s) or from within a
-cluster (when running in a pod).
+`kcount` counts Kubernetes objects across namespaces and clusters. It gets the
+cluster configuration from `KUBECONFIG` environment variable, supplied
+kubeconfig file(s) or from within a cluster (when running in a pod).
 
 It can be used as CLI tool or as daemon (service) exposing Prometheus metrics.
 
