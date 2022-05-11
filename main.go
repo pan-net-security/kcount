@@ -1,4 +1,4 @@
-// Kcount counts Kubernetes objects across clusters.
+// Kcount counts Kubernetes objects across namespaces and clusters.
 package main
 
 import (
