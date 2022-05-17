@@ -5,11 +5,11 @@ used as CLI tool or as daemon (service) exposing Prometheus metrics.
 
 ## CLI tool
 
-Count several kinds of objects in all namespaces using cluster configuration
-from `KUBECONFIG` environment variable or `$HOME/.kube/config`:
+Count all (supported) kinds of objects in all namespaces using cluster
+configuration from `KUBECONFIG` environment variable or `$HOME/.kube/config`:
 
 ```
-$ kcount -k deployment,pod,configmap,secret,ingress -A
+$ kcount -A
 Cluster               Namespace  Label selector  Kind        Count
 -------               ---------  --------------  ----        -----
 cluster1.example.com                             configmap   2736
@@ -17,6 +17,7 @@ cluster1.example.com                             pod         499
 cluster1.example.com                             secret      358
 cluster1.example.com                             deployment  78
 cluster1.example.com                             ingress     40
+cluster1.example.com                             service     20
                                                              -----
                                                              3711
 ```
