@@ -78,7 +78,9 @@ func getKubeconfigs() ([]string, error) {
 			return nil, err
 		}
 		confFile := filepath.Join(usr.HomeDir, ".kube", "config")
-		kubeconfigs = append(kubeconfigs, confFile)
+		if _, err := os.Stat(confFile); err == nil { // check file exists
+			kubeconfigs = append(kubeconfigs, confFile)
+		}
 	}
 
 	return kubeconfigs, nil
