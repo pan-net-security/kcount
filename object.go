@@ -122,7 +122,7 @@ func (c Counts) Sort() {
 
 // Print prints a table with Kubernetes objects. The table can optionally
 // contain the age of the objects.
-func (c Counts) Print(age bool) {
+func (c Counts) Print(flags Flags) {
 	if len(c) == 0 {
 		return
 	}
@@ -130,12 +130,15 @@ func (c Counts) Print(age bool) {
 
 	var total int
 
-	if age {
+	if flags.age {
 		const format = "%v\t%v\t%v\t%v\t%v\t%s\t%s\n"
 		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label", "Kind", "Count", "Newest", "Oldest")
 		fmt.Fprintf(tw, format, "-------", "---------", "-----", "----", "-----", "------", "------")
 		for _, o := range c {
 			total += o.Count
+			if flags.allNamespaces {
+				o.Namespace = "<All>"
+			}
 			fmt.Fprintf(tw, format, o.Cluster, o.Namespace, o.LabelSelector, o.Kind, o.Count, o.Newest, o.Oldest)
 		}
 		fmt.Fprintf(tw, format, "", "", "", "", "-----", "", "")
@@ -146,6 +149,9 @@ func (c Counts) Print(age bool) {
 		fmt.Fprintf(tw, format, "-------", "---------", "-----", "----", "-----")
 		for _, o := range c {
 			total += o.Count
+			if flags.allNamespaces {
+				o.Namespace = "<All>"
+			}
 			fmt.Fprintf(tw, format, o.Cluster, o.Namespace, o.LabelSelector, o.Kind, o.Count)
 		}
 		fmt.Fprintf(tw, format, "", "", "", "", "-----")

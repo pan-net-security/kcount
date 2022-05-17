@@ -53,7 +53,7 @@ func main() {
 	} else { // running as CLI app
 		counts := CountObjectsAcrossClusters(clusters, flags)
 		counts.Sort()
-		counts.Print(flags.age)
+		counts.Print(flags)
 	}
 }
 

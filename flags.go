@@ -39,11 +39,12 @@ func parseFlags() Flags {
 	flag.BoolVar(&f.daemon, "d", false, "run as daemon exposing prometheus metrics")
 	flag.Var(&f.kind, "k", "object kind or kinds (default is all supported)")
 	flag.StringVar(&f.labelSelector, "l", "", "label selector (e.g. env=prod)")
-	flag.StringVar(&f.namespace, "n", "", "namespace")
+	flag.StringVar(&f.namespace, "n", "", "namespace (default is default)")
 
 	flag.Parse()
 
-	if len(f.kind) == 0 { // set default value
+	// Set default values.
+	if len(f.kind) == 0 {
 		f.kind = []string{
 			"deployment",
 			"pod",
@@ -52,6 +53,9 @@ func parseFlags() Flags {
 			"ingress",
 			"service",
 		}
+	}
+	if f.namespace == "" {
+		f.namespace = "default"
 	}
 
 	return f
