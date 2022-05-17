@@ -26,7 +26,7 @@ func main() {
 
 	clusters, err := Clusters(kubeconfigs, flags.allNamespaces, flags.namespace)
 	if err != nil {
-		log.Fatalf("getting cluster configs: %v", err)
+		log.Fatalf("getting cluster config from %s: %v", strings.Join(kubeconfigs, ", "), err)
 	}
 
 	if len(clusters) == 0 {
@@ -58,7 +58,8 @@ func main() {
 }
 
 // getKubeconfigs returns one or more kubeconfigs from command line arguments or
-// from KUBECONFIG environment variable or from $HOME/.kube/config.
+// from KUBECONFIG environment variable or from $HOME/.kube/config (in that
+// order of preference).
 func getKubeconfigs() ([]string, error) {
 	kubeconfigs := flag.Args()
 
