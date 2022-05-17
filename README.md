@@ -5,28 +5,28 @@ used as CLI tool or as daemon (service) exposing Prometheus metrics.
 
 ## CLI tool
 
-Count all (supported) kinds of objects in all namespaces using cluster
-configuration from `KUBECONFIG` environment variable or `$HOME/.kube/config`:
+Count all (supported) kinds of objects in all namespaces. Use cluster
+configuration from `KUBECONFIG` environment variable or `$HOME/.kube/config`.
 
 ```
 $ kcount -A
 Cluster               Namespace  Label  Kind        Count
 -------               ---------  -----  ----        -----
-cluster1.example.com                    configmap   2736
-cluster1.example.com                    pod         499
-cluster1.example.com                    secret      358
-cluster1.example.com                    deployment  78
-cluster1.example.com                    ingress     40
-cluster1.example.com                    service     20
+cluster1.example.com  <All>             configmap   2735
+cluster1.example.com  <All>             pod         551
+cluster1.example.com  <All>             secret      360
+cluster1.example.com  <All>             service     116
+cluster1.example.com  <All>             deployment  78
+cluster1.example.com  <All>             ingress     39
                                                     -----
-                                                    3711
+                                                    3879
 ```
 
-Count pods (and show the age info) with a given label across multiple clusters
-using configuration from supplied kubeconfig files:
+Count pods and ingresses with a given label across multiple clusters. Show also
+age info.
 
 ```
-$ kcount -a -l env=prod ~/.kube/project/*/*
+$ kcount -k pod,ingress -l env=prod -a ~/.kube/project/*/*
 Cluster                Namespace  Label     Kind     Count  Newest  Oldest
 -------                ---------  -----     ----     -----  ------  ------
 cluster1.example.com   ns1        env=prod  pod      68     1d4h    37d

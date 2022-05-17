@@ -14,7 +14,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-const timeout = 5 // cluster API call timeout in seconds
+const timeout = 10 // cluster API call timeout in seconds
 
 // Count represents count and age of Kubernetes objects. The objects are inside
 // a given cluster and namespace, of given kind and matching given label
