@@ -10,16 +10,16 @@ configuration from `KUBECONFIG` environment variable or `$HOME/.kube/config`:
 
 ```
 $ kcount -A
-Cluster               Namespace  Label selector  Kind        Count
--------               ---------  --------------  ----        -----
-cluster1.example.com                             configmap   2736
-cluster1.example.com                             pod         499
-cluster1.example.com                             secret      358
-cluster1.example.com                             deployment  78
-cluster1.example.com                             ingress     40
-cluster1.example.com                             service     20
-                                                             -----
-                                                             3711
+Cluster               Namespace  Label  Kind        Count
+-------               ---------  -----  ----        -----
+cluster1.example.com                    configmap   2736
+cluster1.example.com                    pod         499
+cluster1.example.com                    secret      358
+cluster1.example.com                    deployment  78
+cluster1.example.com                    ingress     40
+cluster1.example.com                    service     20
+                                                    -----
+                                                    3711
 ```
 
 Count pods (and show the age info) with a given label across multiple clusters
@@ -27,16 +27,16 @@ using configuration from supplied kubeconfig files:
 
 ```
 $ kcount -a -l env=prod ~/.kube/project/*/*
-Cluster                Namespace  Label selector  Kind     Count  Newest  Oldest
--------                ---------  --------------  ----     -----  ------  ------
-cluster1.example.com   ns1        env=prod        pod      68     1d4h    37d
-cluster2.example.com   ns1        env=prod        pod      68     1d4h    10d
-cluster3.example.com   ns1        env=prod        pod      42     23d     23d
-cluster1.example.com   ns1        env=prod        ingress  34     2d4h    137d
-cluster2.example.com   ns1        env=prod        ingress  34     2d4h    110d
-cluster3.example.com   ns1        env=prod        ingress  21     33d     123d
-                                                           -----
-                                                           267
+Cluster                Namespace  Label     Kind     Count  Newest  Oldest
+-------                ---------  -----     ----     -----  ------  ------
+cluster1.example.com   ns1        env=prod  pod      68     1d4h    37d
+cluster2.example.com   ns1        env=prod  pod      68     1d4h    10d
+cluster3.example.com   ns1        env=prod  pod      42     23d     23d
+cluster1.example.com   ns1        env=prod  ingress  34     2d4h    137d
+cluster2.example.com   ns1        env=prod  ingress  34     2d4h    110d
+cluster3.example.com   ns1        env=prod  ingress  21     33d     123d
+                                                     -----
+                                                     267
 ```
 
 Installation
