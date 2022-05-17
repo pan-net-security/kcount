@@ -16,7 +16,7 @@ type Cluster struct {
 // Clusters gets cluster configurations from kubeconfigs and from within a
 // cluster if running inside one. It sets cluster.namespace to empty string
 // (which means all namespaces) if allNamespaces is true.
-func Clusters(kubeconfigs []string, allNamespaces bool) ([]Cluster, error) {
+func Clusters(kubeconfigs []string, allNamespaces bool, namespace string) ([]Cluster, error) {
 	var clusters []Cluster
 
 	for _, kc := range kubeconfigs {
@@ -38,6 +38,10 @@ func Clusters(kubeconfigs []string, allNamespaces bool) ([]Cluster, error) {
 	if allNamespaces {
 		for i := range clusters {
 			clusters[i].namespace = ""
+		}
+	} else if namespace != "" {
+		for i := range clusters {
+			clusters[i].namespace = namespace
 		}
 	}
 

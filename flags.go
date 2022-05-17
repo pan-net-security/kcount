@@ -12,6 +12,7 @@ type Flags struct {
 	daemon        bool
 	kind          kinds
 	labelSelector string
+	namespace     string
 }
 
 type kinds []string
@@ -37,6 +38,7 @@ func parseFlags() Flags {
 	flag.BoolVar(&f.daemon, "d", false, "run as daemon exposing prometheus metrics")
 	flag.Var(&f.kind, "k", "object kind or kinds (default pod)")
 	flag.StringVar(&f.labelSelector, "l", "", "label selector (e.g. env=prod)")
+	flag.StringVar(&f.namespace, "n", "", "namespace")
 
 	flag.Parse()
 

@@ -28,7 +28,7 @@ func main() {
 		}
 	}
 
-	clusters, err := Clusters(kubeconfigs, flags.allNamespaces)
+	clusters, err := Clusters(kubeconfigs, flags.allNamespaces, flags.namespace)
 	if err != nil {
 		log.Fatalf("getting cluster configs: %v", err)
 	}
