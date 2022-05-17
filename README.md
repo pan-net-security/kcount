@@ -26,7 +26,7 @@ Count pods and ingresses (and show age info) with a given label across multiple
 clusters.
 
 ```
-$ kcount -k pod,ingress -a -l env=prod ~/.kube/project/*/*
+$ kcount -k pod,ingress -a -l env=prod $HOME/.kube/project/*/*
 Cluster                Namespace  Label     Kind     Count  Newest  Oldest
 -------                ---------  -----     ----     -----  ------  ------
 cluster1.example.com   ns1        env=prod  pod      68     1d4h    37d
