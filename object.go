@@ -132,8 +132,8 @@ func (c Counts) Print(age bool) {
 
 	if age {
 		const format = "%v\t%v\t%v\t%v\t%v\t%s\t%s\n"
-		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label selector", "Kind", "Count", "Newest", "Oldest")
-		fmt.Fprintf(tw, format, "-------", "---------", "--------------", "----", "-----", "------", "------")
+		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label", "Kind", "Count", "Newest", "Oldest")
+		fmt.Fprintf(tw, format, "-------", "---------", "-----", "----", "-----", "------", "------")
 		for _, o := range c {
 			total += o.Count
 			fmt.Fprintf(tw, format, o.Cluster, o.Namespace, o.LabelSelector, o.Kind, o.Count, o.Newest, o.Oldest)
@@ -142,8 +142,8 @@ func (c Counts) Print(age bool) {
 		fmt.Fprintf(tw, format, "", "", "", "", total, "", "")
 	} else {
 		const format = "%v\t%v\t%v\t%v\t%v\n"
-		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label selector", "Kind", "Count")
-		fmt.Fprintf(tw, format, "-------", "---------", "--------------", "----", "-----")
+		fmt.Fprintf(tw, format, "Cluster", "Namespace", "Label", "Kind", "Count")
+		fmt.Fprintf(tw, format, "-------", "---------", "-----", "----", "-----")
 		for _, o := range c {
 			total += o.Count
 			fmt.Fprintf(tw, format, o.Cluster, o.Namespace, o.LabelSelector, o.Kind, o.Count)
