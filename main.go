@@ -5,6 +5,8 @@ import (
 	"flag"
 	"log"
 	"os"
+	"os/user"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -17,15 +19,9 @@ func main() {
 		log.SetPrefix(os.Args[0] + ": ")
 	}
 
-	kubeconfigs := flag.Args()
-
-	if len(kubeconfigs) == 0 {
-		// KUBECONGIG can hold multiple kubeconfigs (separated by : on Linux/Mac)
-		for _, k := range strings.Split(os.Getenv("KUBECONFIG"), ":") {
-			if k != "" {
-				kubeconfigs = append(kubeconfigs, k)
-			}
-		}
+	kubeconfigs, err := getKubeconfigs()
+	if err != nil {
+		log.Fatalf("getting kubeconfigs: %v", err)
 	}
 
 	clusters, err := Clusters(kubeconfigs, flags.allNamespaces, flags.namespace)
@@ -59,4 +55,30 @@ func main() {
 		counts.Sort()
 		counts.Print(flags.age)
 	}
+}
+
+// getKubeconfigs returns one or more kubeconfigs from command line arguments or
+// from KUBECONFIG environment variable or from $HOME/.kube/config.
+func getKubeconfigs() ([]string, error) {
+	kubeconfigs := flag.Args()
+
+	if len(kubeconfigs) == 0 {
+		// KUBECONGIG can hold multiple kubeconfigs (separated by : on Linux/Mac)
+		for _, k := range strings.Split(os.Getenv("KUBECONFIG"), ":") {
+			if k != "" {
+				kubeconfigs = append(kubeconfigs, k)
+			}
+		}
+	}
+
+	if len(kubeconfigs) == 0 {
+		usr, err := user.Current()
+		if err != nil {
+			return nil, err
+		}
+		confFile := filepath.Join(usr.HomeDir, ".kube", "config")
+		kubeconfigs = append(kubeconfigs, confFile)
+	}
+
+	return kubeconfigs, nil
 }

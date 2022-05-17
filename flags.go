@@ -30,6 +30,7 @@ func (k *kinds) Set(value string) error {
 	return nil
 }
 
+// parseFlags parses and returns command line flags (options).
 func parseFlags() Flags {
 	var f Flags
 

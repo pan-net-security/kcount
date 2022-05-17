@@ -1,15 +1,12 @@
 # kcount
 
-`kcount` counts Kubernetes objects across namespaces and clusters. It gets the
-cluster configuration from `KUBECONFIG` environment variable, supplied
-kubeconfig file(s) or from within a cluster (when running in a pod).
-
-It can be used as CLI tool or as daemon (service) exposing Prometheus metrics.
+`kcount` counts Kubernetes objects across namespaces and clusters. It can be
+used as CLI tool or as daemon (service) exposing Prometheus metrics.
 
 ## CLI tool
 
-Count several kinds of objects in all namespaces using KUBECONFIG environment
-variable:
+Count several kinds of objects in all namespaces using cluster configuration
+from `KUBECONFIG` environment variable or `$HOME/.kube/config`:
 
 ```
 $ kcount -k deployment,pod,configmap,secret,ingress -A
@@ -24,7 +21,8 @@ cluster1.example.com                             ingress     40
                                                              3711
 ```
 
-Count pods (and show the age info) with a given label across multiple clusters:
+Count pods (and show the age info) with a given label across multiple clusters
+using configuration from supplied kubeconfig files:
 
 ```
 $ kcount -a -l env=prod ~/.kube/project/*/*
