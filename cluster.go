@@ -68,6 +68,9 @@ func fromKubeconfig(kubeconfig string) (Cluster, error) {
 
 	c.restConfig = restConfig
 	c.namespace = namespace
+	if c.namespace == "" { // saw this when using kind
+		c.namespace = "default"
+	}
 	c.cluster = cluster
 
 	return c, nil
