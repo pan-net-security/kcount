@@ -78,6 +78,8 @@ func countObjects(cluster Cluster, kind, labelSelector string) (Count, error) {
 		n, newest, oldest, err = countSecrets(clientSet, cluster.namespace, labelSelector, timeout)
 	case "ingress":
 		n, newest, oldest, err = countIngresses(clientSet, cluster.namespace, labelSelector, timeout)
+	case "service":
+		n, newest, oldest, err = countServices(clientSet, cluster.namespace, labelSelector, timeout)
 	default:
 		return Count{}, fmt.Errorf("unsupported kind: %s", kind)
 	}
@@ -227,6 +229,22 @@ func countIngresses(clientset *kubernetes.Clientset, namespace string, labelSele
 
 	var items []metav1.ObjectMeta
 	for _, item := range ingresses.Items {
+		items = append(items, item.ObjectMeta)
+	}
+	count, newest, oldest := countItems(items)
+	return count, newest, oldest, nil
+}
+
+func countServices(clientset *kubernetes.Clientset, namespace string, labelSelector string, timeoutSeconds int64) (int, metav1.Time, metav1.Time, error) {
+	services, err := clientset.CoreV1().Services(namespace).List(
+		context.TODO(),
+		metav1.ListOptions{LabelSelector: labelSelector, TimeoutSeconds: &timeoutSeconds})
+	if err != nil {
+		return 0, metav1.Time{}, metav1.Time{}, err
+	}
+
+	var items []metav1.ObjectMeta
+	for _, item := range services.Items {
 		items = append(items, item.ObjectMeta)
 	}
 	count, newest, oldest := countItems(items)
