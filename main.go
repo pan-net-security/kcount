@@ -30,7 +30,7 @@ func main() {
 	}
 
 	if len(clusters) == 0 {
-		log.Fatal("run in cluster, set KUBECONFIG or supply at least one kubeconfig")
+		log.Fatal("run in cluster, create $HOME/.kube/config, set KUBECONFIG or supply at least one kubeconfig")
 	}
 
 	if flags.daemon {
