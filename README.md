@@ -1,5 +1,9 @@
 # kcount
 
+Sometimes I need to get the number of objects inside Kubernetes cluster(s). Or
+I need to compare two or more clusters to see the number and age of the objects
+that get replicated.
+
 `kcount` counts Kubernetes objects across namespaces and clusters. It can be
 used as CLI tool or as daemon (service) exposing Prometheus metrics.
 
